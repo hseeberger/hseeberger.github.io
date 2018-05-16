@@ -1,0 +1,342 @@
+<!doctype html>
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <title>Farewell Any => Unit, welcome Akka Typed!</title>
+
+  <link rel="stylesheet" href="css/reveal.css">
+  <link rel="stylesheet" href="css/theme/white.css">
+
+  <!-- Theme used for syntax highlighting of code -->
+  <link rel="stylesheet" href="lib/css/solarized-light.css">
+
+  <!-- Printing and PDF exports -->
+  <script>
+  var link = document.createElement( 'link' );
+  link.rel = 'stylesheet';
+  link.type = 'text/css';
+  link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+  document.getElementsByTagName( 'head' )[0].appendChild( link );
+  </script>
+
+  <style>
+    #license {
+      font-size: small;
+    }
+    .reveal .max {
+      height: 80%;
+      max-height: 80%;
+      width:  80%;
+      max-width: 80%;
+    }
+  </style>
+  </head>
+  <body>
+  <div class="reveal">
+  <div class="slides">
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+## Farewell `Any => Unit`,<br>welcome Akka Typed!
+
+Heiko Seeberger
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### What's an Actor?
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Yeah, well, ...
+
+![The Dude](images/dude.jpg "The Dude") <!-- .element class="max" -->
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Actor Model
+
+>The actor is the fundamental unit of computation embodying processing, storage and communication.
+
+[Carl Hewitt](https://channel9.msdn.com/Shows/Going+Deep/Hewitt-Meijer-and-Szyperski-The-Actor-Model-everything-you-wanted-to-know-but-were-afraid-to-ask)
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Actor Systems
+
+- One actor is no actor, they come in systems
+- Collaboration via asynchronous communication
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Behavior
+
+- Create new actors
+- Send messages to known actors
+- Designate the behavior for the next message
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown data-background="images/codecentric-green-background-16x9.png"><script type="text/template">
+### How do Akka Untyped and Typed implement the Actor Model?
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Untyped: Protocol
+
+``` scala
+object Account {
+
+  final case object GetBalance
+  final case class Balance(balance: Long)
+
+  final case class Deposit(amount: Long)
+  final case object Deposited
+
+  final case class Withdraw(amount: Long)
+  final case class InsufficientBalance(balance: Long)
+  final case object Withdrawn
+}
+```
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Untyped: Implementation I
+
+``` scala
+final class MutAccount(initialBalance: Long) extends Actor {
+  import Account._
+
+  private var balance = initialBalance      // mut. variable
+
+  override def receive: Receive = {         // PF[Any, Unit]
+    case GetBalance =>
+      sender() ! Balance(balance)           // ! accepts Any
+
+    case Deposit(amount) =>
+      balance += amount
+
+    ...
+```
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Untyped: Implementation II
+
+``` scala
+final class Account(initialBalance: Long) extends Actor {
+  import Account._
+
+  override def receive: Receive =
+    account(initialBalance)
+
+  private def account(balance: Long): Receive = {
+    case GetBalance =>
+      sender() ! Balance(balance)
+
+    case Deposit(a) =>
+      context.become(account(balance + a)) // change behavior
+
+    ...
+```
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Typed: Important API Changes
+
+- `ActorRef[T]`
+- Instead of extending `Actor`, define `Behavior[T]`
+- No more `sender()` or `ActorSelection`
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### `Behavior[T]`
+
+- Simplified: Message => Next Behavior
+- Messages are either of type `T` or a `Signal`
+- `Behaviors` contains many factories, e.g.
+  - `receiveMessage`
+  - `same`
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Typed: Protocol
+
+``` scala
+object Account {
+
+  // TODO Adapt untyped protocol to Akka Typed!
+
+  final case object GetBalance
+  final case class Balance(balance: Long)
+
+  final case class Deposit(amount: Long)
+  final case object Deposited
+
+  final case class Withdraw(amount: Long)
+  final case class InsufficientBalance(balance: Long)
+  final case object Withdrawn
+}
+```
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown data-background="images/codecentric-green-background-16x9.png"><script type="text/template">
+### Let's implement a typed `Account`!
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Typed: More `Behaviors`
+
+- `receive` to get an `ActorContext` and a message
+- `setup` if you need an `ActorContext` early on
+- `receivePartial` to ignore unmatched messages
+- `stopped` to ... guess what!
+- `receiveSignal` to react to lifecycle signals only
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Typed: `ActorContext`
+
+- `spawn` to create a child actor
+- `messageAdapter` to ingest external messages
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown data-background="images/codecentric-green-background-16x9.png"><script type="text/template">
+### Let's implement a typed `Transfer`!
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Migration Summary
+
+- Use ADTs for the message protocols
+- Replace implicit sender with reply-to address
+- Use adapters to ingest external messages
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Coexistence
+
+- Import `akka.typed.scaladsl.adapter._`
+- Now "everything" works btw. untyped and typed
+- Small differences regarding supervision
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown data-background="images/codecentric-green-background-16x9.png"><script type="text/template">
+### Let's look at an untyped `Transfer` using typed `Account`s!
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Supervision
+
+- Faulty actors are stopped by default
+- Or use `Behaviors.supervise`
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown data-background="images/codecentric-green-background-16x9.png"><script type="text/template">
+### Let's take a look at supervision!
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### Current State
+
+Typed API available for:
+- Persistence
+- Cluster (Singleton, Sharding, etc.)
+- Distributed Data
+- Streams
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+### What's next?
+
+- Almost feature complete
+- IMHO production ready!
+- Please give it a try and give feedback
+</script></section>
+
+<!-- ########################################################################################### -->
+
+<section data-markdown><script type="text/template">
+## Thank you!
+
+- Blog: [heikoseeberger.rocks](https://heikoseeberger.rocks/)
+- GitHub: [hseeberger](https://github.com/hseeberger)
+- Twitter: [hseeberger](https://twitter.com/hseeberger)
+
+<span id="license">This work is licensed under a
+[Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0)
+and powered by [reveal.js](https://github.com/hakimel/reveal.js) under its
+[LICENSE](https://github.com/hakimel/reveal.js/blob/master/LICENSE).</span>
+</script></section>
+
+<!-- ########################################################################################### -->
+
+  </div>
+  </div>
+
+  <script src="lib/js/head.min.js"></script>
+  <script src="js/reveal.js"></script>
+
+  <script>
+  // More info about config & dependencies:
+  // - https://github.com/hakimel/reveal.js#configuration
+  // - https://github.com/hakimel/reveal.js#dependencies
+  Reveal.initialize({
+  history: true,
+  dependencies: [
+  { src: 'plugin/markdown/marked.js' },
+  { src: 'plugin/markdown/markdown.js' },
+  { src: 'plugin/notes/notes.js', async: true },
+  { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+  ]
+  });
+  </script>
+  </body>
+</html>
