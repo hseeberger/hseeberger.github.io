@@ -6,7 +6,7 @@ permalink: /about/
 
 <img src="../logo-120.jpeg" alt="Logo" style="float:left; margin-right:32px; margin-bottom:16px;">
 
-Heiko Seeberger loves rock climbing and is an internationally renowned expert on [Scala](https://scala-lang.org), [Akka](https://akka.io) and Functional Programming.
+Heiko Seeberger loves rock climbing, is an internationally renowned expert on [Scala](https://scala-lang.org), [Akka](https://akka.io) and Functional Programming and is enthusiastic about Rust.
 
 He has more than twenty years of experience in software engineering, consulting and training and is an active open source contributor.
 
