@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="Testing actors is different from “traditional” testing of objects or functions. First, the only way to interact with actors is via asynchronous messaging. This means that we can’t simply call a method">
+<meta property="og:type" content="article">
+<meta property="og:title" content="How to (not) use akka-testkit">
+<meta property="og:url" content="https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/index.html">
+<meta property="og:site_name" content="Heiko&#39;s Blog">
+<meta property="og:description" content="Testing actors is different from “traditional” testing of objects or functions. First, the only way to interact with actors is via asynchronous messaging. This means that we can’t simply call a method">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-09-13T00:00:00.000Z">
+<meta property="article:modified_time" content="2022-02-11T23:56:50.315Z">
+<meta property="article:author" content="Heiko Seeberger">
+<meta property="article:tag" content="akka">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/img/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
+        
+      
+    
+    <!-- title -->
+    <title>How to (not) use akka-testkit</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 6.0.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2017/10/02/2017-10-02-actor-model/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/01/23/2017-01-23-hello-new-blog/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&text=How to (not) use akka-testkit"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&is_video=false&description=How to (not) use akka-testkit"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=How to (not) use akka-testkit&body=Check out this article: https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&name=How to (not) use akka-testkit&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&t=How to (not) use akka-testkit"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#TestActorRef"><span class="toc-number">1.</span> <span class="toc-text">TestActorRef</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TestKit"><span class="toc-number">2.</span> <span class="toc-text">TestKit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TestProbe"><span class="toc-number">3.</span> <span class="toc-text">TestProbe</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">4.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        How to (not) use akka-testkit
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Heiko Seeberger</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-09-13T00:00:00.000Z" itemprop="datePublished">2017-09-13</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/akka/" rel="tag">akka</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>Testing actors is different from “traditional” testing of objects or functions. First, the only way to interact with actors is via asynchronous messaging. This means that we can’t simply call a method or function and compare the actual result with the expected. Second – thanks to the baked in concurrency – actors behave in a nondeterministic fashion.</p>
+<p><a target="_blank" rel="noopener" href="https://akka.io/">Akka</a> comes with a neat module for facilitating testing of actors named “akka-testkit”. It has been created quite a while ago and we – including the authors – have learned some lessons since then. I’m going to introduce the tools provided by “akka-testkit” alongside with some recommendations on which to use and how.</p>
+<h2 id="TestActorRef"><a href="#TestActorRef" class="headerlink" title="TestActorRef"></a>TestActorRef</h2><p>Akka – the core “akka-actor” module, to be more precise – prevents us from getting access to an instance of an actor. Yet “akka-testkit” introduces the <code>TestActorRef</code> which gives access to the <code>underlyingActor</code> instance.</p>
+<p>While this might sound like a great idea, it turns out the opposite, because the <code>TestActorRef</code> brings its special dispatcher – the <code>CurrentThreadDispatcher</code> – which turns all interactions with the actor into synchronous ones. Clearly testing within this friendly sandboxed environment is far from real conditions, namely asynchrony and nondeterminism.</p>
+<p>Usually not getting access to an instance of an actor is not an issue, because it should always be possible to separate our business logic from actor logic, e.g. by defining the business logic as methods in the companion object of the actor. That way we can still test the business logic the “traditional” way. And for testing the actor logic we can use <code>TestProbe</code>s – another tool provided by “akka-testkit” and introduced below.</p>
+<blockquote>
+<p>Avoid using <code>TestActorRef</code>!</p>
+</blockquote>
+<h2 id="TestKit"><a href="#TestKit" class="headerlink" title="TestKit"></a>TestKit</h2><p>As mentioned above, we can only interact with actors via asynchronous messaging. Therefore the message protocol of an actor – the messages it receives and sends – is its de facto API. Hence in order to test the actor logic we have to send specific messages and expect messages sent in response.</p>
+<p>“akka-testkit” introduces the <code>TestKit</code> to extend our test suites from. This gives access to a <code>testActor</code> which can be used as (implicit) sender or mocked <code>ActorRef</code> in messages sent. In addition <code>TestKit</code> introduces a lot of so called built-in assertions which allow us to expect – or not expect – messages sent from the actor to be tested to the <code>testActor</code>.</p>
+<p>Here comes a simple – and admittedly a little contrived – example which not only shows how to use <code>TestKit</code>, but also demonstrates its core issue:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">EchoSpec</span></span></span><br><span class="line">    <span class="keyword">extends</span> <span class="type">TestKit</span>(<span class="type">ActorSystem</span>(<span class="string">&quot;EchoSpec&quot;</span>))</span><br><span class="line">    <span class="keyword">with</span> <span class="type">WordSpecLike</span></span><br><span class="line">    <span class="keyword">with</span> <span class="type">BeforeAndAfterAll</span> &#123;</span><br><span class="line"></span><br><span class="line">  <span class="string">&quot;Echo&quot;</span> should &#123;</span><br><span class="line">    <span class="string">&quot;respond with &#x27;Hello&#x27; upon receiving &#x27;Hello&#x27;&quot;</span> in &#123;</span><br><span class="line">      <span class="keyword">implicit</span> <span class="keyword">val</span> sender = testActor</span><br><span class="line">      <span class="keyword">val</span> echo            = system.actorOf(<span class="type">Echo</span>())</span><br><span class="line">      echo ! <span class="string">&quot;Hello&quot;</span></span><br><span class="line">      expectMsg(<span class="string">&quot;Hello&quot;</span>)</span><br><span class="line">      echo ! <span class="string">&quot;By mistake&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;respond with &#x27;World&#x27; upon receiving &#x27;World&#x27;&quot;</span> in &#123;</span><br><span class="line">      <span class="keyword">implicit</span> <span class="keyword">val</span> sender = testActor</span><br><span class="line">      <span class="keyword">val</span> echo            = system.actorOf(<span class="type">Echo</span>())</span><br><span class="line">      echo ! <span class="string">&quot;World&quot;</span></span><br><span class="line">      expectMsg(<span class="string">&quot;World&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">afterAll</span></span>() = &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Can you spot the issue? Right, the second test fails, because the <code>testActor</code> is shared across all the tests in the suite. Even though tests usually run sequentially, messages sent but not consumed by one test – “By mistake” in our example – still remain in the inbox of the <code>testActor</code> and get consumed by subsequent tests instead of the intended ones.</p>
+<p>Additionally for advanced protocols we often need more <code>ActorRef</code>s which we can use like the <code>testActor</code>. These are provided via the last tool introduced here, the <code>TestProbe</code>. So the recommendation is to always only use test-local <code>TestProbe</code>s which avoids the aforementioned issue of sharing a single <code>testActor</code> across tests.</p>
+<blockquote>
+<p>Don’t use <code>TestKit</code>, instead use test-local <code>TestProbe</code>s!</p>
+</blockquote>
+<h2 id="TestProbe"><a href="#TestProbe" class="headerlink" title="TestProbe"></a>TestProbe</h2><p><code>TestProbe</code>s are more or less like <code>TestKit</code> – they actually extend it – without extending the suite from. Instead they are created as needed for each test.</p>
+<p>Here comes the above simple example rewritten to use test-local <code>TestProbe</code>s:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">EchoSpec</span> <span class="keyword">extends</span> <span class="title">WordSpec</span> <span class="keyword">with</span> <span class="title">BeforeAndAfterAll</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">implicit</span> <span class="keyword">val</span> system = <span class="type">ActorSystem</span>(<span class="string">&quot;EchoSpec&quot;</span>)</span><br><span class="line"></span><br><span class="line">  <span class="string">&quot;Echo&quot;</span> should &#123;</span><br><span class="line">    <span class="string">&quot;respond with &#x27;Hello&#x27; upon receiving &#x27;Hello&#x27;&quot;</span> in &#123;</span><br><span class="line">      <span class="keyword">val</span> sender             = <span class="type">TestProbe</span>()</span><br><span class="line">      <span class="keyword">implicit</span> <span class="keyword">val</span> senderRef = sender.ref</span><br><span class="line">      <span class="keyword">val</span> echo               = system.actorOf(<span class="type">Echo</span>())</span><br><span class="line">      echo ! <span class="string">&quot;Hello&quot;</span></span><br><span class="line">      sender.expectMsg(<span class="string">&quot;Hello&quot;</span>)</span><br><span class="line">      echo ! <span class="string">&quot;This message is sent unintentionally&quot;</span></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="string">&quot;respond with &#x27;World&#x27; upon receiving &#x27;World&#x27;&quot;</span> in &#123;</span><br><span class="line">      <span class="keyword">val</span> sender             = <span class="type">TestProbe</span>()</span><br><span class="line">      <span class="keyword">implicit</span> <span class="keyword">val</span> senderRef = sender.ref</span><br><span class="line">      <span class="keyword">val</span> echo               = system.actorOf(<span class="type">Echo</span>())</span><br><span class="line">      echo ! <span class="string">&quot;World&quot;</span></span><br><span class="line">      sender.expectMsg(<span class="string">&quot;World&quot;</span>)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="keyword">protected</span> <span class="function"><span class="keyword">def</span> <span class="title">afterAll</span></span>() = &#123; ... &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>As each test has its own <code>TestProbe</code>, sending more message than consuming these in the first test doesn’t influence the second. Of course we have to write one more line for each test and also call <code>expectMsg</code> or other built-in assertions on the <code>TestProbe</code>, but this minimal additional boilerplate usually doesn’t hurt. And it will pay off, because errors like the above are sometimes almost impossible to spot.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>After discussing the three main tools “akka-testkit” provides, we have to conclude that only <code>TestProbe</code> should be used. No <code>TestActorRef</code> and no <code>TestKit</code>.</p>
+<p>Happy hakking!</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#TestActorRef"><span class="toc-number">1.</span> <span class="toc-text">TestActorRef</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TestKit"><span class="toc-number">2.</span> <span class="toc-text">TestKit</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#TestProbe"><span class="toc-number">3.</span> <span class="toc-text">TestProbe</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">4.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&text=How to (not) use akka-testkit"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&is_video=false&description=How to (not) use akka-testkit"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=How to (not) use akka-testkit&body=Check out this article: https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&name=How to (not) use akka-testkit&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2017/09/13/2017-09-13-how-to-use-akka-testkit/&t=How to (not) use akka-testkit"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2022
+    Heiko Seeberger
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
