@@ -131,3 +131,7 @@ theme_config:
       url: /img/favicon.ico
     apple:
       url: /img/favicon.ico
+
+plausible:
+  enable: true
+  domain: heikoseeberger.de
