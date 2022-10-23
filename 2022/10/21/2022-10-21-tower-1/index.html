@@ -8,13 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
     <meta name="description" content="When I first came across the Tower library, which is part of the Tokio stack, I noticed its title line: 1async fn(Request) -&gt; Result&lt;Response, Error&gt;  In the documentation this is explained a">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Tower, episode 1: your service as a function">
+<meta property="og:title" content="Tower, Episode 1: your Service as a Function">
 <meta property="og:url" content="https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/index.html">
 <meta property="og:site_name" content="Heiko&#39;s Blog">
 <meta property="og:description" content="When I first came across the Tower library, which is part of the Tokio stack, I noticed its title line: 1async fn(Request) -&gt; Result&lt;Response, Error&gt;  In the documentation this is explained a">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2022-10-21T00:00:00.000Z">
-<meta property="article:modified_time" content="2022-10-22T08:10:16.935Z">
+<meta property="article:modified_time" content="2022-10-23T20:29:43.569Z">
 <meta property="article:author" content="Heiko Seeberger">
 <meta property="article:tag" content="rust">
 <meta property="article:tag" content="tokio">
@@ -39,7 +39,7 @@
       
     
     <!-- title -->
-    <title>Tower, episode 1: your service as a function</title>
+    <title>Tower, Episode 1: your Service as a Function</title>
     <!-- styles -->
     
 <link rel="stylesheet" href="/css/style.css">
@@ -75,6 +75,8 @@
     <span id="actions">
       <ul>
         
+        <li><a class="icon" aria-label="Previous post" href="/2022/10/23/2022-10-23-tower-2/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
         
         <li><a class="icon" aria-label="Next post" href="/2020/01/07/2020-01-07-dotty-4/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
@@ -90,16 +92,16 @@
     <div id="share" style="display: none">
       <ul>
   <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&text=Tower, episode 1: your service as a function"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&is_video=false&description=Tower, episode 1: your service as a function"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Tower, episode 1: your service as a function&body=Check out this article: https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&name=Tower, episode 1: your service as a function&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&t=Tower, episode 1: your service as a function"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&text=Tower, Episode 1: your Service as a Function"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&is_video=false&description=Tower, Episode 1: your Service as a Function"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Tower, Episode 1: your Service as a Function&body=Check out this article: https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&name=Tower, Episode 1: your Service as a Function&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&t=Tower, Episode 1: your Service as a Function"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -116,7 +118,7 @@
   <header>
     
     <h1 class="posttitle" itemprop="name headline">
-        Tower, episode 1: your service as a function
+        Tower, Episode 1: your Service as a Function
     </h1>
 
 
@@ -164,16 +166,16 @@
 <p>Second, Tower enriches the core abstraction of an asynchronous function with the concept of readiness, as we can see form the definition of the <code>Service</code> trait:</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">trait</span> <span class="title class_">Service</span>&lt;Request&gt; &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Response</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Error</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Future</span>: Future&lt;Output = <span class="type">Result</span>&lt;<span class="keyword">Self</span>::Response, <span class="keyword">Self</span>::Error&gt;&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll_ready</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, cx: &amp;<span class="keyword">mut</span> Context&lt;<span class="symbol">&#x27;_</span>&gt;) <span class="punctuation">-&gt;</span> Poll&lt;<span class="type">Result</span>&lt;(), <span class="keyword">Self</span>::Error&gt;&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">call</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, req: Request) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span>::Future;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>At its core, the contract between clients and these service methods is as follows:</p>
+<p>At its core, the contract for callers of these service methods is as follows:</p>
 <ul>
-<li>Before invoking <code>call</code>, <code>poll_ready</code> must have been invoked – possibly several times – until returning <code>Poll::Ready</code>.</li>
+<li>First <code>poll_ready</code> must be invoked – potentially several times – until it returns <code>Poll::Ready</code>, then <code>call</code> can be invoked.</li>
 <li><code>call</code> might panic if the above is not the case.</li>
 </ul>
-<p>Before going into the details of service clients in the next episode, let’s first take a look at a simple example for a service:</p>
+<p>Before going into the details of calling services in the next episode, let’s first take a look at a simple example for a service:</p>
 <figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">EchoRequest</span>(<span class="type">String</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">EchoResponse</span>(<span class="type">String</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">struct</span> <span class="title class_">EchoService</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// Tower `Service` implementation for [EchoService]: always ready, never fails and responds</span></span><br><span class="line"><span class="comment">/// immediately with an echo, i.e. a response with the same content like the request.</span></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">Service</span>&lt;EchoRequest&gt; <span class="keyword">for</span> <span class="title class_">EchoService</span> &#123;</span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Response</span> = EchoResponse;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// This service never fails.</span></span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Error</span> = Infallible;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// This service responds immediately.</span></span><br><span class="line">    <span class="keyword">type</span> <span class="title class_">Future</span> = Ready&lt;<span class="type">Result</span>&lt;<span class="keyword">Self</span>::Response, <span class="keyword">Self</span>::Error&gt;&gt;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Always return `Poll::Ready`: this service is always ready.</span></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">poll_ready</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, _cx: &amp;<span class="keyword">mut</span> Context&lt;<span class="symbol">&#x27;_</span>&gt;) <span class="punctuation">-&gt;</span> Poll&lt;<span class="type">Result</span>&lt;(), <span class="keyword">Self</span>::Error&gt;&gt; &#123;</span><br><span class="line">        Poll::<span class="title function_ invoke__">Ready</span>(<span class="title function_ invoke__">Ok</span>(()))</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/// Always return an echo, i.e. a response with the same content like the request.</span></span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">call</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, req: EchoRequest) <span class="punctuation">-&gt;</span> <span class="keyword">Self</span>::Future &#123;</span><br><span class="line">        <span class="title function_ invoke__">ready</span>(<span class="title function_ invoke__">Ok</span>(<span class="title function_ invoke__">EchoResponse</span>(req.<span class="number">0</span>)))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>As this service is always ready, it is not necessary for <code>call</code> to panic if <code>poll_ready</code> has not been called before.</p>
-<p>The full code is available in <a target="_blank" rel="noopener" href="https://github.com/hseeberger/tower-experiments">tower-experiments on GitHub</a>. In the next episode we will take a look at service clients.</p>
+<p>The full code is available in <a target="_blank" rel="noopener" href="https://github.com/hseeberger/tower-experiments">tower-experiments on GitHub</a>. In the <a href="/2022/10/23/2022-10-23-tower-2">next episode</a> we will take a look at service clients.</p>
 
   </div>
 </article>
@@ -203,16 +205,16 @@
     <div id="share-footer" style="display: none">
       <ul>
   <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&text=Tower, episode 1: your service as a function"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&is_video=false&description=Tower, episode 1: your service as a function"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=Tower, episode 1: your service as a function&body=Check out this article: https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, episode 1: your service as a function"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&name=Tower, episode 1: your service as a function&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&t=Tower, episode 1: your service as a function"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&text=Tower, Episode 1: your Service as a Function"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&is_video=false&description=Tower, Episode 1: your Service as a Function"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Tower, Episode 1: your Service as a Function&body=Check out this article: https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&title=Tower, Episode 1: your Service as a Function"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&name=Tower, Episode 1: your Service as a Function&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2022/10/21/2022-10-21-tower-1/&t=Tower, Episode 1: your Service as a Function"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
