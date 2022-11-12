@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="The actor model was invented in the early seventies by Carl Hewitt et al. and very successfully implemented in the Erlang programming language. Of course it is also the foundation for Akka and in this">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Actor Model in Akka and Akka Typed">
+<meta property="og:url" content="https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/index.html">
+<meta property="og:site_name" content="Heiko&#39;s Blog">
+<meta property="og:description" content="The actor model was invented in the early seventies by Carl Hewitt et al. and very successfully implemented in the Erlang programming language. Of course it is also the foundation for Akka and in this">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2017-10-01T22:00:00.000Z">
+<meta property="article:modified_time" content="2022-11-12T09:27:34.731Z">
+<meta property="article:author" content="Heiko Seeberger">
+<meta property="article:tag" content="akka">
+<meta property="article:tag" content="actors">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/img/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
+        
+      
+    
+    <!-- title -->
+    <title>The Actor Model in Akka and Akka Typed</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<!-- hexo injector head_end start --><script async defer data-domain="heikoseeberger.de" src="https://plausible.io/js/plausible.js" ></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2018/12/15/2018-12-16-scalax-akka-cluster-up-and-running/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2017/09/12/2017-09-13-how-to-use-akka-testkit/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&text=The Actor Model in Akka and Akka Typed"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&is_video=false&description=The Actor Model in Akka and Akka Typed"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=The Actor Model in Akka and Akka Typed&body=Check out this article: https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&name=The Actor Model in Akka and Akka Typed&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&t=The Actor Model in Akka and Akka Typed"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Actor-Model"><span class="toc-number">1.</span> <span class="toc-text">The Actor Model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Actor-Model-in-Akka"><span class="toc-number">2.</span> <span class="toc-text">The Actor Model in Akka</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Same-Behavior-with-Mutable-State"><span class="toc-number">2.1.</span> <span class="toc-text">1. Same Behavior with Mutable State</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Changing-Behavior"><span class="toc-number">2.2.</span> <span class="toc-text">2. Changing Behavior</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Actor-Model-in-Akka-Typed"><span class="toc-number">3.</span> <span class="toc-text">The Actor Model in Akka Typed</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">4.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        The Actor Model in Akka and Akka Typed
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Heiko Seeberger</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2017-10-01T22:00:00.000Z" itemprop="datePublished">2017-10-02</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/actors/" rel="tag">actors</a>, <a class="tag-link-link" href="/tags/akka/" rel="tag">akka</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>The <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Actor_model">actor model</a> was invented in the early seventies by <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Carl_Hewitt">Carl Hewitt</a> et al. and very successfully implemented in the <a target="_blank" rel="noopener" href="https://www.erlang.org/">Erlang</a> programming language. Of course it is also the foundation for <a target="_blank" rel="noopener" href="https://akka.io/">Akka</a> and in this post we are taking a look at how exactly Akka implements the actor model, both in good old Akka and in bleeding edge Akka Typed. As usual we are using Scala as our programming language of choice.</p>
+<h2 id="The-Actor-Model"><a href="#The-Actor-Model" class="headerlink" title="The Actor Model"></a>The Actor Model</h2><p>Carl Hewitt <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=7erJ1DV_Tlo">explains</a> the actor as the “fundamental unit of computation embodying processing (do things), storage (state) and communications” where “everything is an actor” and “one actor is no actor, they come in systems”. Collaboration between actors happens via asynchronous communication, allowing for decoupling of sender and receiver: each actor has an address and can send messages to actors for which it knows their address without being blocked in its processing.</p>
+<p>When an actor processes a message it has received – which is performed by its so called behavior – it can do the following, concurrently and in any order:</p>
+<ol>
+<li>create new actors</li>
+<li>send messages to known actors</li>
+<li>designate the behavior for the next message</li>
+</ol>
+<p>Given this brief description of the actor model, let’s now take a look at how Akka and Akka Typed implement it thereby ignoring creating new actors, because this happens more or less the same way in both Akka and Akka Typed.</p>
+<h2 id="The-Actor-Model-in-Akka"><a href="#The-Actor-Model-in-Akka" class="headerlink" title="The Actor Model in Akka"></a>The Actor Model in Akka</h2><p>In Akka an actor is a class extending <code>Actor</code> and its so called initial behavior is defined by the <code>receive</code> method:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">Actor</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receive</span></span>: <span class="type">PartialFunction</span>[<span class="type">Any</span>, <span class="type">Unit</span>] <span class="comment">// actually type alias `Receive`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The initial behavior is used to handle messages until we change it, if ever. As we can see, the behavior is a partial function from <code>Any</code> to <code>Unit</code> which means that – although Scala and Java are type safe languages – Akka actors are untyped: we can send any message to an actor even though it most probably only handles specific ones – the compiler is not able to help us.</p>
+<p>This is also reflected in the <code>ActorRef</code> trait which represents the address of an actor in Akka:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">ActorRef</span> </span>&#123; <span class="comment">// actually `ScalaActorRef`</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">!</span></span>(message: <span class="type">Any</span>)(<span class="keyword">implicit</span> sender: <span class="type">ActorRef</span> = <span class="type">Actor</span>.noSender): <span class="type">Unit</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The <code>!</code> operator allows us to send a message of type <code>Any</code> to the actor identified by the respective address. Obviously there is no way to restrict the message to some specific type. Further the address of the sender is conveyed as an implicit parameter if possible, which is the case when sending happens from within an actor.</p>
+<p>Let’s look at another important aspect of the behavior in Akka. It returns <code>Unit</code> which means that designating a different behavior for the next message must happen as a side effect. And indeed each actor has access to its <code>ActorContext</code> which offers the <code>become</code> method for that exact purpose:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">trait</span> <span class="title">ActorContext</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">become</span></span>(behavior: <span class="type">PartialFunction</span>[<span class="type">Any</span>, <span class="type">Unit</span>]): <span class="type">Unit</span> <span class="comment">// actually type alias `Receive`</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-Same-Behavior-with-Mutable-State"><a href="#1-Same-Behavior-with-Mutable-State" class="headerlink" title="1. Same Behavior with Mutable State"></a>1. Same Behavior with Mutable State</h3><p>Equipped with this knowledge, let’s implement a simple example: an actor which produces increasing sequence numbers. Let’s start with an actor which stores the current sequence number value in a mutable field – Akka makes sure this cannot be shared and all access happens in a thread safe manner:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> akka.actor.<span class="type">Actor</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">MutableSeqNoGenerator</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">GetNext</span></span></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">SeqNo</span>(<span class="params">seqNo: <span class="type">Long</span></span>)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">MutableSeqNoGenerator</span>(<span class="params">seqNo: <span class="type">Long</span> = 0</span>) <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</span><br><span class="line">  <span class="keyword">import</span> <span class="type">MutableSeqNoGenerator</span>._</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="keyword">var</span> _seqNo = seqNo</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">GetNext</span> =&gt;</span><br><span class="line">      sender() ! <span class="type">SeqNo</span>(_seqNo)</span><br><span class="line">      _seqNo += <span class="number">1</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>As the behavior closes over the mutable field we need not ever change it (the behavior).</p>
+<h3 id="2-Changing-Behavior"><a href="#2-Changing-Behavior" class="headerlink" title="2. Changing Behavior"></a>2. Changing Behavior</h3><p>While the above implementation represents an idiomatic pattern for Akka, we can also handle the mutability of the sequence number value by changing the behavior instead of using a mutable field:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> akka.actor.<span class="type">Actor</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">SeqNoGenerator</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">case</span> <span class="class"><span class="keyword">object</span> <span class="title">GetNext</span></span></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">SeqNo</span>(<span class="params">seqNo: <span class="type">Long</span></span>)</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">SeqNoGenerator</span>(<span class="params">seqNo: <span class="type">Long</span> = 0</span>) <span class="keyword">extends</span> <span class="title">Actor</span> </span>&#123;</span><br><span class="line">  <span class="keyword">import</span> <span class="type">SeqNoGenerator</span>._</span><br><span class="line"></span><br><span class="line">  <span class="keyword">override</span> <span class="function"><span class="keyword">def</span> <span class="title">receive</span> </span>= seqNoGenerator(seqNo)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">private</span> <span class="function"><span class="keyword">def</span> <span class="title">seqNoGenerator</span></span>(seqNo: <span class="type">Long</span>): <span class="type">Receive</span> = &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="type">GetNext</span> =&gt;</span><br><span class="line">      sender() ! <span class="type">SeqNo</span>(seqNo)</span><br><span class="line">      context.become(seqNoGenerator(seqNo + <span class="number">1</span>))</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>In this case we change the behavior every time the actor processes a <code>GetNext</code> message and thus can get rid of the mutable field. This pattern is particularly useful to implement actors representing state machines.</p>
+<h2 id="The-Actor-Model-in-Akka-Typed"><a href="#The-Actor-Model-in-Akka-Typed" class="headerlink" title="The Actor Model in Akka Typed"></a>The Actor Model in Akka Typed</h2><p>As clearly indicated by naming, Akka Typed brings type safety back to Akka. But Akka Typed also resembles the actual definition of the actor model much closer than Akka by dropping the <code>Actor</code> trait and conceptually treating behavior as a function from a typed message to the next behavior:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">ExtensibleBehavior</span>[<span class="type">T</span>] <span class="keyword">extends</span> <span class="title">Behavior</span>[<span class="type">T</span>] </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receiveMessage</span></span>(ctx: <span class="type">ActorContext</span>[<span class="type">T</span>], msg: <span class="type">T</span>): <span class="type">Behavior</span>[<span class="type">T</span>]</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">receiveSignal</span></span>(ctx: <span class="type">ActorContext</span>[<span class="type">T</span>], msg: <span class="type">Signal</span>): <span class="type">Behavior</span>[<span class="type">T</span>]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>As we can see, the behavior has a type parameter for the type of messages the actor handles. Therefore <code>receiveMessage</code> is a total function instead of a partial one. Since there is no enclosing <code>Actor</code> class, the <code>ActorContext</code> is also passed as a parameter along with the respective message. And finally <code>receiveSignal</code> takes care of a few special messages like <code>PreRestart</code> or <code>Terminated</code> which of course are not covered by the message type <code>T</code>.</p>
+<p>Having a parameterized behavior we obviously also need a parameterized address:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">implicit</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">ActorRefOps</span>[-<span class="type">T</span>](<span class="params">val ref: <span class="type">ActorRef</span>[<span class="type">T</span>]</span>) <span class="keyword">extends</span> <span class="title">AnyVal</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">!</span></span>(msg: <span class="type">T</span>): <span class="type">Unit</span> = ref.tell(msg)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Now we can only send messages of type <code>T</code> to the respective actor: good-bye <code>Any</code>!</p>
+<p>One important difference is worth mentioning: in Akka Typed there is no implicit sender any more. While this inevitable change – what exact type should <code>sender()</code> return? – might look like a step backwards, we can even regard it as an advantage: we have to make our message protocols more explicit and therefore easier to understand by including addresses for replies where needed.</p>
+<p>Like in Akka we have two ways to actually create a behavior: a mutable – closing over mutable state – and an immutable one. This time the second one is exclusively considered the idiomatic one, hence we only show the following example:</p>
+<figure class="highlight scala"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> akka.typed.&#123; <span class="type">ActorRef</span>, <span class="type">Behavior</span> &#125;</span><br><span class="line"><span class="keyword">import</span> akka.typed.scaladsl.<span class="type">Actor</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">object</span> <span class="title">SeqNoGenerator</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">GetNext</span>(<span class="params">replyTo: <span class="type">ActorRef</span>[<span class="type">SeqNo</span>]</span>)</span></span><br><span class="line">  <span class="keyword">final</span> <span class="keyword">case</span> <span class="class"><span class="keyword">class</span> <span class="title">SeqNo</span>(<span class="params">seqNo: <span class="type">Long</span></span>)</span></span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">apply</span></span>(seqNo: <span class="type">Long</span> = <span class="number">0</span>): <span class="type">Behavior</span>[<span class="type">GetNext</span>] =</span><br><span class="line">    <span class="type">Actor</span>.immutable &#123;</span><br><span class="line">      <span class="keyword">case</span> (_, <span class="type">GetNext</span>(replyTo)) =&gt;</span><br><span class="line">        replyTo ! <span class="type">SeqNo</span>(seqNo)</span><br><span class="line">        <span class="type">SeqNoGenerator</span>(seqNo + <span class="number">1</span>)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Notice that we have to include the <code>replyTo</code> address in the <code>GetNext</code> message as a typed <code>ActorRef[SeqNo]</code>, representing an address which only accepts messages of type <code>SeqNo</code>.</p>
+<p>Using <code>Actor.immutable</code> we define a so called immutable behavior, i.e. one which does not close over mutable state. It is typed to only handle messages of type <code>GetNext</code>. We are using pattern matching, but only to conveniently destruct the message – the message handler function given as argument to <code>Actor.immutable</code> is still a total one. The result of the message handler is the next behavior, similar like using <code>ActorContext.become</code> above, but not as a side-effect which makes testing much easier.</p>
+<h2 id="Conclusion"><a href="#Conclusion" class="headerlink" title="Conclusion"></a>Conclusion</h2><p>We have looked at the ways Akka and Akka Typed implement the actor model. Both fully support the required behavior rules, i.e. creating new actors, sending messages to known actors and designating the next behavior. But Akka Typed not only makes the last aspect more tangible by conceptually treating behavior as a function from message to the next behavior, but also brings back type safety.</p>
+<p>The full source code for the examples can be found at <a target="_blank" rel="noopener" href="https://github.com/hseeberger/blog-actor-model">github.com&#x2F;hseeberger&#x2F;blog-actor-model</a> in the <code>de.heikoseeberger.blog.actormodel</code> package.</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Actor-Model"><span class="toc-number">1.</span> <span class="toc-text">The Actor Model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Actor-Model-in-Akka"><span class="toc-number">2.</span> <span class="toc-text">The Actor Model in Akka</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Same-Behavior-with-Mutable-State"><span class="toc-number">2.1.</span> <span class="toc-text">1. Same Behavior with Mutable State</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Changing-Behavior"><span class="toc-number">2.2.</span> <span class="toc-text">2. Changing Behavior</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#The-Actor-Model-in-Akka-Typed"><span class="toc-number">3.</span> <span class="toc-text">The Actor Model in Akka Typed</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Conclusion"><span class="toc-number">4.</span> <span class="toc-text">Conclusion</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&text=The Actor Model in Akka and Akka Typed"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&is_video=false&description=The Actor Model in Akka and Akka Typed"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=The Actor Model in Akka and Akka Typed&body=Check out this article: https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&title=The Actor Model in Akka and Akka Typed"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&name=The Actor Model in Akka and Akka Typed&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2017/10/01/2017-10-02-actor-model/&t=The Actor Model in Akka and Akka Typed"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2022
+    Heiko Seeberger
+  </div>
+  <div><a rel="me noopener" target="_blank" href="https://hachyderm.io/@hseeberger"></a></div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
