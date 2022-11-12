@@ -9,7 +9,7 @@ description: It is not the answer that enlightens, but the quest(ion).
 keywords: Heiko Seeberger blog
 author: Heiko Seeberger
 language: en
-timezone: ""
+timezone: "Europe/Berlin"
 
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
@@ -112,6 +112,7 @@ theme_config:
   social_links:
     github: https://github.com/hseeberger
     gitlab: https://gitlab.com/hseeberger
+    mastodon: https://hachyderm.io/@hseeberger
     twitter: https://twitter.com/hseeberger
     linkedin: https://www.linkedin.com/in/heikoseeberger
   projects_url: https://github.com/hseeberger
