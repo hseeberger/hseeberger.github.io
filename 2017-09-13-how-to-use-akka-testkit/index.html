@@ -9,12 +9,12 @@
     <meta name="description" content="Testing actors is different from “traditional” testing of objects or functions. First, the only way to interact with actors is via asynchronous messaging. This means that we can’t simply call a method">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How to (not) use akka-testkit">
-<meta property="og:url" content="https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/index.html">
+<meta property="og:url" content="https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/index.html">
 <meta property="og:site_name" content="Heiko&#39;s Blog">
 <meta property="og:description" content="Testing actors is different from “traditional” testing of objects or functions. First, the only way to interact with actors is via asynchronous messaging. This means that we can’t simply call a method">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2017-09-12T22:00:00.000Z">
-<meta property="article:modified_time" content="2022-11-12T09:27:34.731Z">
+<meta property="article:published_time" content="2017-09-13T00:00:00.000Z">
+<meta property="article:modified_time" content="2022-11-17T10:16:14.445Z">
 <meta property="article:author" content="Heiko Seeberger">
 <meta property="article:tag" content="akka">
 <meta name="twitter:card" content="summary">
@@ -73,10 +73,10 @@
     <span id="actions">
       <ul>
         
-        <li><a class="icon" aria-label="Previous post" href="/2017/10/01/2017-10-02-actor-model/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Previous post" href="/2017-10-02-actor-model/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
-        <li><a class="icon" aria-label="Next post" href="/2017/01/22/2017-01-23-hello-new-blog/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Next post" href="/2017-01-23-hello-new-blog/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
         
         <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
         <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
@@ -89,17 +89,17 @@
     <br/>
     <div id="share" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&text=How to (not) use akka-testkit"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&is_video=false&description=How to (not) use akka-testkit"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=How to (not) use akka-testkit&body=Check out this article: https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&name=How to (not) use akka-testkit&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&t=How to (not) use akka-testkit"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&text=How to (not) use akka-testkit"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&is_video=false&description=How to (not) use akka-testkit"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=How to (not) use akka-testkit&body=Check out this article: https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&name=How to (not) use akka-testkit&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&t=How to (not) use akka-testkit"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
@@ -128,7 +128,7 @@
       
     <div class="postdate">
       
-        <time datetime="2017-09-12T22:00:00.000Z" itemprop="datePublished">2017-09-13</time>
+        <time datetime="2017-09-13T00:00:00.000Z" itemprop="datePublished">2017-09-13</time>
         
       
     </div>
@@ -201,17 +201,17 @@
 
     <div id="share-footer" style="display: none">
       <ul>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&text=How to (not) use akka-testkit"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&is_video=false&description=How to (not) use akka-testkit"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" href="mailto:?subject=How to (not) use akka-testkit&body=Check out this article: https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&name=How to (not) use akka-testkit&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
-  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2017/09/12/2017-09-13-how-to-use-akka-testkit/&t=How to (not) use akka-testkit"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&text=How to (not) use akka-testkit"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&is_video=false&description=How to (not) use akka-testkit"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=How to (not) use akka-testkit&body=Check out this article: https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&title=How to (not) use akka-testkit"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&name=How to (not) use akka-testkit&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2017-09-13-how-to-use-akka-testkit/&t=How to (not) use akka-testkit"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
 </ul>
 
     </div>
