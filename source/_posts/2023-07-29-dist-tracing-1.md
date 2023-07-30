@@ -20,6 +20,10 @@ Let's start with some ~~boring~~ basic terminology:
 
 Log events give us valuable insights about **what** has happened, e.g. not being able to call a downstream service in a multi-service architecture. But without traces it often is hard to understand the context, i.e. the **why**, e.g. how the request looked like or what the various arguments in the call chain leading to the failing call were. Therefore it is very important to use both logs and traces and to make sure they work seamlessly together.
 
+The following picture shows a screenshot from Grafana Cloud with a structured log event on the left and an associated trace on the right:
+
+![](/img/hello-tracing-rs.png)
+
 In this episode we are looking at the basics of logs with the Tokio tracing framework. The next episodes will cover traces as well as correlating logs and traces.
 
 To create a log event in code, the [`tracing` crate](https://crates.io/crates/tracing) provides macros for the respective levels, e.g. `debug!` or `error!`:
