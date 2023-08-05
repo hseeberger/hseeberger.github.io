@@ -132,6 +132,7 @@ theme_config:
       url: /img/favicon.ico
     apple:
       url: /img/favicon.ico
+  rss:
 
 plausible:
   enable: true
