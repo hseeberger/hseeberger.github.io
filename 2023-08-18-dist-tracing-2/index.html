@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="In the previous episode we were looking at the basics of logging with the Tokio tracing framework; now we are covering tracing. As a quick recap, a trace represents a flow of execution through a syste">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Distributed Tracing in Rust, Episode 2: tracing basics">
+<meta property="og:url" content="https://hseeberger.github.io/2023-08-18-dist-tracing-2/index.html">
+<meta property="og:site_name" content="Heiko&#39;s Blog">
+<meta property="og:description" content="In the previous episode we were looking at the basics of logging with the Tokio tracing framework; now we are covering tracing. As a quick recap, a trace represents a flow of execution through a syste">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hseeberger.github.io/img/hello-tracing-rs-2.png">
+<meta property="article:published_time" content="2023-08-18T00:00:00.000Z">
+<meta property="article:modified_time" content="2023-08-18T05:52:01.489Z">
+<meta property="article:author" content="Heiko Seeberger">
+<meta property="article:tag" content="rust">
+<meta property="article:tag" content="tracing">
+<meta property="article:tag" content="opentelemetry">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hseeberger.github.io/img/hello-tracing-rs-2.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/img/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
+        
+      
+    
+    <!-- title -->
+    <title>Distributed Tracing in Rust, Episode 2: tracing basics</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<!-- hexo injector head_end start --><script async defer data-domain="heikoseeberger.de" src="https://plausible.io/js/plausible.js" ></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023-07-29-dist-tracing-1/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2023-08-18-dist-tracing-2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&text=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&is_video=false&description=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 2: tracing basics&body=Check out this article: https://hseeberger.github.io/2023-08-18-dist-tracing-2/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&name=Distributed Tracing in Rust, Episode 2: tracing basics&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&t=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Distributed Tracing in Rust, Episode 2: tracing basics
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Heiko Seeberger</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-08-18T00:00:00.000Z" itemprop="datePublished">2023-08-18</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/opentelemetry/" rel="tag">opentelemetry</a>, <a class="tag-link-link" href="/tags/rust/" rel="tag">rust</a>, <a class="tag-link-link" href="/tags/tracing/" rel="tag">tracing</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>In the <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-07-29-dist-tracing-1/">previous episode</a> we were looking at the basics of logging with the Tokio tracing framework; now we are covering tracing.</p>
+<p>As a quick recap, a trace represents a flow of execution through a system in some period of time. It is made up of at least a root span covering the complete flow and potentially one or more sequential sub spans which themselves can contain sub spans. More details and a formal specification can be found at <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/observability-primer/">OpenTelemetry</a>.</p>
+<p>The following picture shows a simple example of a trace visualized with Grafana Cloud involving two services:</p>
+<p><img src="/img/hello-tracing-rs-2.png"></p>
+<p>To understand this trace, we have to understand how to propagate trace information – the so called trace context – across services. But before that, let’s see how we can create spans in code, for which the <a target="_blank" rel="noopener" href="https://crates.io/crates/tracing"><code>tracing</code></a> crate provides two ways: programatically and via the <code>instrument</code> attribute. The latter is easy to use and convenient to add spans to functions:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[instrument(name = <span class="string">&quot;hello-handler&quot;</span>, skip(app_state))]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">hello</span>(<span class="title function_ invoke__">State</span>(app_state): State&lt;AppState&gt;) <span class="punctuation">-&gt;</span> <span class="keyword">impl</span> <span class="title class_">IntoResponse</span> &#123;</span><br><span class="line">    app_state.backend.<span class="title function_ invoke__">hello</span>().<span class="keyword">await</span>.<span class="title function_ invoke__">map_err</span>(internal_error)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Here a span with <code>INFO</code> level (default unless overridden) named <code>hello-handler</code> (default is function name) is entered when the <code>hello</code> function is called and exited when it returns. By default all function arguments are recorded as span fields, but with <code>skip</code> we ignore <code>app_state</code>.</p>
+<p>Sometimes it is necessary to create spans programatically. Our services use the <a target="_blank" rel="noopener" href="https://crates.io/crates/tower-http"><code>tower-http</code></a> crate to add a <code>TraceLayer</code> to our <a target="_blank" rel="noopener" href="https://crates.io/crates/axum"><code>axum</code></a> based web server. That <code>TraceLayer</code> creates a span for every received request which we customize the following way:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">TraceLayer::<span class="title function_ invoke__">new_for_http</span>().<span class="title function_ invoke__">make_span_with</span>(make_span)</span><br><span class="line"></span><br><span class="line">...</span><br><span class="line"></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">make_span</span>(request: &amp;Request&lt;Body&gt;) <span class="punctuation">-&gt;</span> Span &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">headers</span> = request.<span class="title function_ invoke__">headers</span>();</span><br><span class="line">    info_span!(<span class="string">&quot;incoming request&quot;</span>, ?headers)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>We use the <code>info_span!</code> macro to create a span with <code>INFO</code> level, we name it <code>&quot;incoming request&quot;</code> and we add the headers – its <code>Debug</code> implementation via <code>?</code> – as field.</p>
+<p>Now we know how to create traces inside a single service. But what about inter-service communication? And how can we visualize traces? This will be covered in the next episodes. The already fully fleshed out example code can be found at <a target="_blank" rel="noopener" href="https://github.com/hseeberger/hello-tracing-rs/">hello-tracing-rs on GitHub</a>.</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2023-08-18-dist-tracing-2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&text=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&is_video=false&description=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 2: tracing basics&body=Check out this article: https://hseeberger.github.io/2023-08-18-dist-tracing-2/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&title=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&name=Distributed Tracing in Rust, Episode 2: tracing basics&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2023-08-18-dist-tracing-2/&t=Distributed Tracing in Rust, Episode 2: tracing basics"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Heiko Seeberger
+  </div>
+  <div><a rel="me noopener" target="_blank" href="https://hachyderm.io/@hseeberger"></a></div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
