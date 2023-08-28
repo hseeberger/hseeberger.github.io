@@ -1,5 +1,5 @@
 ---
-title: 'Distributed Tracing in Rust, Episode 3: tracing basics'
+title: 'Distributed Tracing in Rust, Episode 3: inter-service tracing'
 date: 2023-08-28
 permalink: 2023-08-28-dist-tracing-3/
 tags:
