@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="In the previous episode we were looking at the basics of tracing with the Tokio tracing framework and showed how to create traces inside a single service. Now let’s see how we can deal with inter-serv">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Distributed Tracing in Rust, Episode 3: tracing basics">
+<meta property="og:url" content="https://hseeberger.github.io/2023-08-28-dist-tracing-3/index.html">
+<meta property="og:site_name" content="Heiko&#39;s Blog">
+<meta property="og:description" content="In the previous episode we were looking at the basics of tracing with the Tokio tracing framework and showed how to create traces inside a single service. Now let’s see how we can deal with inter-serv">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hseeberger.github.io/img/hello-tracing-rs-2.png">
+<meta property="article:published_time" content="2023-08-28T00:00:00.000Z">
+<meta property="article:modified_time" content="2023-08-28T18:26:48.321Z">
+<meta property="article:author" content="Heiko Seeberger">
+<meta property="article:tag" content="rust">
+<meta property="article:tag" content="tracing">
+<meta property="article:tag" content="opentelemetry">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hseeberger.github.io/img/hello-tracing-rs-2.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/img/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
+        
+      
+    
+    <!-- title -->
+    <title>Distributed Tracing in Rust, Episode 3: tracing basics</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<!-- hexo injector head_end start --><script async defer data-domain="heikoseeberger.de" src="https://plausible.io/js/plausible.js" ></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023-08-18-dist-tracing-2/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2023-08-28-dist-tracing-3/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&text=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&is_video=false&description=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 3: tracing basics&body=Check out this article: https://hseeberger.github.io/2023-08-28-dist-tracing-3/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&name=Distributed Tracing in Rust, Episode 3: tracing basics&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&t=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Receiving-the-Trace-Context"><span class="toc-number">1.</span> <span class="toc-text">Receiving the Trace Context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sending-the-Trace-Context"><span class="toc-number">2.</span> <span class="toc-text">Sending the Trace Context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Configuring-the-Subscriber"><span class="toc-number">3.</span> <span class="toc-text">Configuring the Subscriber</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Distributed Tracing in Rust, Episode 3: tracing basics
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Heiko Seeberger</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-08-28T00:00:00.000Z" itemprop="datePublished">2023-08-28</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/opentelemetry/" rel="tag">opentelemetry</a>, <a class="tag-link-link" href="/tags/rust/" rel="tag">rust</a>, <a class="tag-link-link" href="/tags/tracing/" rel="tag">tracing</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>In the <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-08-18-dist-tracing-2/">previous episode</a> we were looking at the basics of tracing with the Tokio tracing framework and showed how to create traces inside a single service. Now let’s see how we can deal with inter-service communication.</p>
+<p>In our example we have two services: when the <code>hello-tracing-gateway</code> service receives a HTTP request, it calls the <code>hello-tracing-backend</code> service via gRPC and then responds via HTTP.</p>
+<p>Each service uses a <code>Subscriber</code> emitting spans – we will look at the respective configuration later. Obviously we somehow have to propagate and connect the spans – this is known as <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/concepts/signals/traces/#context-propagation">trace context propagation</a> – and the way we want to do it is via the OpenTelemetry standard.</p>
+<p>Luckily there are a couple of helpful Rust crates for this purpose:</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://crates.io/crates/opentelemetry"><code>opentelemetry</code></a>: the standard in Rust</li>
+<li><a target="_blank" rel="noopener" href="https://crates.io/crates/tracing-opentelemetry"><code>tracing-opentelemetry</code></a>: connect spans from multiple subscribers to an OpenTelemetry trace</li>
+<li><a target="_blank" rel="noopener" href="https://crates.io/crates/opentelemetry-http"><code>opentelemetry-http</code></a>: trace context propagation via HTTP</li>
+</ul>
+<p>For trace context propagation we need two sides: the sender and the receiver of the trace context.</p>
+<h2 id="Receiving-the-Trace-Context"><a href="#Receiving-the-Trace-Context" class="headerlink" title="Receiving the Trace Context"></a>Receiving the Trace Context</h2><p>Let’s first look at the receiver, i.e. the <code>hello-tracing-backend</code> service. As the communication happens via gPRC which uses HTTP&#x2F;2 as transport protocol, we can make use of <code>opentelemetry-http</code> and its <code>HeaderExtractor</code>:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Trace context propagation: associate the current span with the OTel trace of the given request,</span></span><br><span class="line"><span class="comment">/// if any and valid.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">accept_trace</span>(request: Request&lt;Body&gt;) <span class="punctuation">-&gt;</span> Request&lt;Body&gt; &#123;</span><br><span class="line">    <span class="comment">// Current context, if no or invalid data is received.</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">parent_context</span> = global::<span class="title function_ invoke__">get_text_map_propagator</span>(|propagator| &#123;</span><br><span class="line">        propagator.<span class="title function_ invoke__">extract</span>(&amp;<span class="title function_ invoke__">HeaderExtractor</span>(request.<span class="title function_ invoke__">headers</span>()))</span><br><span class="line">    &#125;);</span><br><span class="line">    Span::<span class="title function_ invoke__">current</span>().<span class="title function_ invoke__">set_parent</span>(parent_context);</span><br><span class="line"></span><br><span class="line">    request</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>This function taking a <code>Request</code> and returning it unchanged, uses the request headers to create a <code>HeaderExtractor</code> which again is used in a call to <code>get_text_map_propagator</code> from the <code>opentelemetry</code> API. <code>propagator.extract</code> then returns an <code>opentelemetry::Context</code> which we use to set as the parent of the current <code>Span</code> from <code>tracing</code>. So if the headers contain valid OpenTelemetry trace context values, these are used to associate the current span with the overall OpenTelemetry trace.</p>
+<p>We use this function in our <a target="_blank" rel="noopener" href="https://crates.io/crates/tonic">tonic</a> based gRPC server in <code>hello-tracing-backend</code>:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">pub</span> <span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">serve</span>(config: Config) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;()&gt; &#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">app</span> = Server::<span class="title function_ invoke__">builder</span>()</span><br><span class="line">        .<span class="title function_ invoke__">layer</span>(</span><br><span class="line">            ServiceBuilder::<span class="title function_ invoke__">new</span>()</span><br><span class="line">                .<span class="title function_ invoke__">layer</span>(TraceLayer::<span class="title function_ invoke__">new_for_grpc</span>().<span class="title function_ invoke__">make_span_with</span>(make_span))</span><br><span class="line">                .<span class="title function_ invoke__">map_request</span>(accept_trace),</span><br><span class="line">        )</span><br><span class="line">        .<span class="title function_ invoke__">add_service</span>(v0::<span class="title function_ invoke__">hello</span>());</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Here we use <code>tower::ServiceBuilder</code> to add a layer before the actual gRPC service <code>v0::hello</code>. That layer not only adds – like explained in the <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-08-18-dist-tracing-2/">previous episode</a> – tracing to requests via the <code>TraceLayer</code>, but also uses the above <code>accept_trace</code> function in the <code>map_request</code> call to propagate the trace context.</p>
+<h2 id="Sending-the-Trace-Context"><a href="#Sending-the-Trace-Context" class="headerlink" title="Sending the Trace Context"></a>Sending the Trace Context</h2><p>All right, now let’s look at the sender, i.e. the <code>hello-tracing-gateway</code>. This time we have to stick to the tonic API – namely an <code>Interceptor</code> – to send the trace context. Therefore we cannot use <code>opentelemetry-http</code> and its <code>HeaderInjector</code>, but we have to roll our own:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">MetadataInjector</span>&lt;<span class="symbol">&#x27;a</span>&gt;(&amp;<span class="symbol">&#x27;a</span> <span class="keyword">mut</span> MetadataMap);</span><br><span class="line"></span><br><span class="line"><span class="keyword">impl</span> <span class="title class_">Injector</span> <span class="keyword">for</span> <span class="title class_">MetadataInjector</span>&lt;<span class="symbol">&#x27;_</span>&gt; &#123;</span><br><span class="line">    <span class="keyword">fn</span> <span class="title function_">set</span>(&amp;<span class="keyword">mut</span> <span class="keyword">self</span>, key: &amp;<span class="type">str</span>, value: <span class="type">String</span>) &#123;</span><br><span class="line">        <span class="keyword">match</span> MetadataKey::<span class="title function_ invoke__">from_bytes</span>(key.<span class="title function_ invoke__">as_bytes</span>()) &#123;</span><br><span class="line">            <span class="title function_ invoke__">Ok</span>(key) =&gt; <span class="keyword">match</span> MetadataValue::<span class="title function_ invoke__">try_from</span>(&amp;value) &#123;</span><br><span class="line">                <span class="title function_ invoke__">Ok</span>(value) =&gt; &#123;</span><br><span class="line">                    <span class="keyword">self</span>.<span class="number">0</span>.<span class="title function_ invoke__">insert</span>(key, value);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="title function_ invoke__">Err</span>(error) =&gt; warn!(value, error = <span class="built_in">format!</span>(<span class="string">&quot;&#123;error:#&#125;&quot;</span>), <span class="string">&quot;parse metadata value&quot;</span>),</span><br><span class="line">            &#125;,</span><br><span class="line"></span><br><span class="line">            <span class="title function_ invoke__">Err</span>(error) =&gt; warn!(key, error = <span class="built_in">format!</span>(<span class="string">&quot;&#123;error:#&#125;&quot;</span>), <span class="string">&quot;parse metadata key&quot;</span>),</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>With that <code>Injector</code> implementation we can define a function taking a <code>Request</code> and returning it unchanged and wrapped in an <code>Ok</code>. Again we use <code>get_text_map_propagator</code> from the <code>opentelemetry</code> API, this time to call <code>propagator.inject_context</code> with an OpenTelemetry trace context built from the current <code>Span</code> from <code>tracing</code>:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Trace context propagation: send the trace context by injecting it into the metadata of the given</span></span><br><span class="line"><span class="comment">/// request.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">send_trace</span>&lt;T&gt;(<span class="keyword">mut</span> request: Request&lt;T&gt;) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;Request&lt;T&gt;, Status&gt; &#123;</span><br><span class="line">    global::<span class="title function_ invoke__">get_text_map_propagator</span>(|propagator| &#123;</span><br><span class="line">        <span class="keyword">let</span> <span class="variable">context</span> = Span::<span class="title function_ invoke__">current</span>().<span class="title function_ invoke__">context</span>();</span><br><span class="line">        propagator.<span class="title function_ invoke__">inject_context</span>(&amp;context, &amp;<span class="keyword">mut</span> <span class="title function_ invoke__">MetadataInjector</span>(request.<span class="title function_ invoke__">metadata_mut</span>()))</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(request)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>This <code>send_trace</code> is then used as tonic interceptor, such that for outgoing service calls the trace context is propagated:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">endpoint</span> = Endpoint::<span class="title function_ invoke__">from_str</span>(&amp;<span class="keyword">self</span>.config.endpoint)</span><br><span class="line">    .<span class="title function_ invoke__">with_context</span>(|| <span class="built_in">format!</span>(<span class="string">&quot;create endpoint &#123;&#125;&quot;</span>, <span class="keyword">self</span>.config.endpoint))?;</span><br><span class="line"><span class="keyword">let</span> <span class="variable">channel</span> = endpoint</span><br><span class="line">    .<span class="title function_ invoke__">connect</span>()</span><br><span class="line">    .<span class="keyword">await</span></span><br><span class="line">    .<span class="title function_ invoke__">with_context</span>(|| <span class="built_in">format!</span>(<span class="string">&quot;connect to endpoint &#123;&#125;&quot;</span>, <span class="keyword">self</span>.config.endpoint))?;</span><br><span class="line"><span class="keyword">let</span> <span class="keyword">mut </span><span class="variable">client</span> = HelloClient::<span class="title function_ invoke__">with_interceptor</span>(channel, send_trace);</span><br></pre></td></tr></table></figure>
+
+<h2 id="Configuring-the-Subscriber"><a href="#Configuring-the-Subscriber" class="headerlink" title="Configuring the Subscriber"></a>Configuring the <code>Subscriber</code></h2><p>In the <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-07-29-dist-tracing-1/">first episode</a> we introdued the tracing_subscriber crate and used it to set up a formatter layer logging JSON formatted representations of tracing events. Let’s now extend the setup and add a layer exporting tracing data via the <a target="_blank" rel="noopener" href="https://opentelemetry.io/docs/specs/otlp/">OpenTelemetry Protocol (OTLP)</a> to a configurable backend which then can be used to visualize traces:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Create an OTLP layer exporting tracing data.</span></span><br><span class="line"><span class="keyword">fn</span> <span class="title function_">otlp_layer</span>&lt;S&gt;(config: TracingConfig) <span class="punctuation">-&gt;</span> <span class="type">Result</span>&lt;<span class="keyword">impl</span> <span class="title class_">Layer</span>&lt;S&gt;&gt;</span><br><span class="line"><span class="keyword">where</span></span><br><span class="line">    S: Subscriber + <span class="keyword">for</span>&lt;<span class="symbol">&#x27;span</span>&gt; LookupSpan&lt;<span class="symbol">&#x27;span</span>&gt;,</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">exporter</span> = opentelemetry_otlp::<span class="title function_ invoke__">new_exporter</span>()</span><br><span class="line">        .<span class="title function_ invoke__">tonic</span>()</span><br><span class="line">        .<span class="title function_ invoke__">with_endpoint</span>(config.otlp_exporter_endpoint);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">trace_config</span> = trace::<span class="title function_ invoke__">config</span>().<span class="title function_ invoke__">with_resource</span>(Resource::<span class="title function_ invoke__">new</span>(<span class="built_in">vec!</span>[KeyValue::<span class="title function_ invoke__">new</span>(</span><br><span class="line">        <span class="string">&quot;service.name&quot;</span>,</span><br><span class="line">        config.service_name,</span><br><span class="line">    )]));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">tracer</span> = opentelemetry_otlp::<span class="title function_ invoke__">new_pipeline</span>()</span><br><span class="line">        .<span class="title function_ invoke__">tracing</span>()</span><br><span class="line">        .<span class="title function_ invoke__">with_exporter</span>(exporter)</span><br><span class="line">        .<span class="title function_ invoke__">with_trace_config</span>(trace_config)</span><br><span class="line">        .<span class="title function_ invoke__">install_batch</span>(runtime::Tokio)</span><br><span class="line">        .<span class="title function_ invoke__">context</span>(<span class="string">&quot;install tracer&quot;</span>)?;</span><br><span class="line"></span><br><span class="line">    <span class="title function_ invoke__">Ok</span>(tracing_opentelemetry::<span class="title function_ invoke__">layer</span>().<span class="title function_ invoke__">with_tracer</span>(tracer))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Here we are using the <a target="_blank" rel="noopener" href="https://crates.io/crates/opentelemetry-otlp"><code>opentelemetry_otlp</code> crate</a> to create an exporter based on tonic&#x2F;gRPC with configurable endpoint and service name. With this exporter we create a <code>Tracer</code> from the <code>opentelemetry</code> API which is then used to create the layer.</p>
+<p>All that is left to do is add this OTLP layer to the tracing_subscriber:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">tracing_subscriber::<span class="title function_ invoke__">registry</span>()</span><br><span class="line">    .<span class="title function_ invoke__">with</span>(EnvFilter::<span class="title function_ invoke__">from_default_env</span>())</span><br><span class="line">    .<span class="title function_ invoke__">with</span>(fmt::<span class="title function_ invoke__">layer</span>().<span class="title function_ invoke__">json</span>())</span><br><span class="line">    .<span class="title function_ invoke__">with</span>(<span class="title function_ invoke__">otlp_layer</span>(config)?)</span><br><span class="line">    .<span class="title function_ invoke__">try_init</span>()</span><br><span class="line">    .<span class="title function_ invoke__">context</span>(<span class="string">&quot;initialize tracing subscriber&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>With this setup and a properly configured tracing backend – we use Grafana Tempo – we can visualize traces like already shown in the <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-08-18-dist-tracing-2/">previous episode</a>:</p>
+<p><img src="/img/hello-tracing-rs-2.png"></p>
+<p>Now we are almost there. What’s left to do is correlate logs and traces, but we’ll leave that to the next episode. As usual, the already fully fleshed out example code can be found at <a target="_blank" rel="noopener" href="https://github.com/hseeberger/hello-tracing-rs/">hello-tracing-rs on GitHub</a>.</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Receiving-the-Trace-Context"><span class="toc-number">1.</span> <span class="toc-text">Receiving the Trace Context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sending-the-Trace-Context"><span class="toc-number">2.</span> <span class="toc-text">Sending the Trace Context</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Configuring-the-Subscriber"><span class="toc-number">3.</span> <span class="toc-text">Configuring the Subscriber</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2023-08-28-dist-tracing-3/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&text=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&is_video=false&description=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 3: tracing basics&body=Check out this article: https://hseeberger.github.io/2023-08-28-dist-tracing-3/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&title=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&name=Distributed Tracing in Rust, Episode 3: tracing basics&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2023-08-28-dist-tracing-3/&t=Distributed Tracing in Rust, Episode 3: tracing basics"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Heiko Seeberger
+  </div>
+  <div><a rel="me noopener" target="_blank" href="https://hachyderm.io/@hseeberger"></a></div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
