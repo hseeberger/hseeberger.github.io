@@ -42,5 +42,4 @@ fn make_span(request: &Request<Body>) -> Span {
 
 We use the `info_span!` macro to create a span with `INFO` level, we name it `"incoming request"` and we add the headers – its `Debug` implementation via `?` – as field.
 
-
 Now we know how to create traces inside a single service. But what about inter-service communication? And how can we visualize traces? This will be covered in the next episodes. The already fully fleshed out example code can be found at [hello-tracing-rs on GitHub](https://github.com/hseeberger/hello-tracing-rs/).
