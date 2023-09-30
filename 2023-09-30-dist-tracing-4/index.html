@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="In the previous episodes we coverd logging basics, tracing basics and inter-service tracing. Now it is time to finish up this series with explaining how to correlate logs and traces. Why should we bot">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Distributed Tracing in Rust, Episode 4: correlating logs and traces">
+<meta property="og:url" content="https://hseeberger.github.io/2023-09-30-dist-tracing-4/index.html">
+<meta property="og:site_name" content="Heiko&#39;s Blog">
+<meta property="og:description" content="In the previous episodes we coverd logging basics, tracing basics and inter-service tracing. Now it is time to finish up this series with explaining how to correlate logs and traces. Why should we bot">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://hseeberger.github.io/img/hello-tracing-rs.png">
+<meta property="article:published_time" content="2023-09-30T00:00:00.000Z">
+<meta property="article:modified_time" content="2023-09-30T13:26:53.333Z">
+<meta property="article:author" content="Heiko Seeberger">
+<meta property="article:tag" content="rust">
+<meta property="article:tag" content="tracing">
+<meta property="article:tag" content="opentelemetry">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://hseeberger.github.io/img/hello-tracing-rs.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/img/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
+        
+      
+    
+    <!-- title -->
+    <title>Distributed Tracing in Rust, Episode 4: correlating logs and traces</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<!-- hexo injector head_end start --><script async defer data-domain="heikoseeberger.de" src="https://plausible.io/js/plausible.js" ></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2023-08-28-dist-tracing-3/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2023-09-30-dist-tracing-4/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&text=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&is_video=false&description=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 4: correlating logs and traces&body=Check out this article: https://hseeberger.github.io/2023-09-30-dist-tracing-4/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&name=Distributed Tracing in Rust, Episode 4: correlating logs and traces&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&t=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Distributed Tracing in Rust, Episode 4: correlating logs and traces
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Heiko Seeberger</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2023-09-30T00:00:00.000Z" itemprop="datePublished">2023-09-30</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/opentelemetry/" rel="tag">opentelemetry</a>, <a class="tag-link-link" href="/tags/rust/" rel="tag">rust</a>, <a class="tag-link-link" href="/tags/tracing/" rel="tag">tracing</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>In the previous episodes we coverd <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-07-29-dist-tracing-1/">logging basics</a>, <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-08-18-dist-tracing-2/">tracing basics</a> and <a target="_blank" rel="noopener" href="https://heikoseeberger.de/2023-08-28-dist-tracing-3">inter-service tracing</a>. Now it is time to finish up this series with explaining how to correlate logs and traces.</p>
+<p>Why should we bother? Well, if we think about an ERROR level log event, we hopefully get a nice error message and some additional fields, but what about the bigger context? Wouldn’t it be useful to know the complete flow of execution through the system from end to end, i.e. the trace, during which the error occured, with all its additional fields, in particular from higher up in the call stack?</p>
+<p>In order to achieve that goal, we simply have to add the trace ID as field to every log event. But of course we do not want to do that manually and luckily this is not necessary at all.</p>
+<p>As the Tokio tracing framework only knows spans, we have to use <code>tracing-opentelemetry</code> to get from tracing spans to OpenTelemetry spans and from there to OpenTelemetry traces:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// Recorcd the OTel trace ID of the given request as &quot;trace_id&quot; field in the current span.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">fn</span> <span class="title function_">record_trace_id</span>(request: Request&lt;Body&gt;) <span class="punctuation">-&gt;</span> Request&lt;Body&gt; &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">span</span> = Span::<span class="title function_ invoke__">current</span>(); <span class="comment">// Tokio tracing span.</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">span</span> = span.<span class="title function_ invoke__">context</span>().<span class="title function_ invoke__">span</span>(); <span class="comment">// OpenTelemetry span via OpenTelemetrySpanExt.</span></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">trace_id</span> = span.<span class="title function_ invoke__">span_context</span>().<span class="title function_ invoke__">trace_id</span>(); <span class="comment">// OpenTelemetry trace ID.</span></span><br><span class="line">    span.<span class="title function_ invoke__">record</span>(<span class="string">&quot;trace_id&quot;</span>, trace_id.<span class="title function_ invoke__">to_string</span>());</span><br><span class="line"></span><br><span class="line">    request</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>We can use this function taking a <code>Request</code> and returning it unchanged, thereby recording the OpenTelemetry trace ID as a span field, as an addtional layer for <code>hello-tracing-gateway</code> and likewise for <code>hello-tracing-backend</code>:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ServiceBuilder::<span class="title function_ invoke__">new</span>()</span><br><span class="line">    .<span class="title function_ invoke__">layer</span>(TraceLayer::<span class="title function_ invoke__">new_for_http</span>().<span class="title function_ invoke__">make_span_with</span>(make_span))</span><br><span class="line">    .<span class="title function_ invoke__">map_request</span>(accept_trace)</span><br><span class="line">    .<span class="title function_ invoke__">map_request</span>(record_trace_id),</span><br></pre></td></tr></table></figure>
+
+<p>In order to make this work, we have to reserve an empty <code>&quot;trace_id&quot;</code> field on each span, though. Hence we update our <code>make_span</code> functions:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">fn</span> <span class="title function_">make_span</span>(request: &amp;Request&lt;Body&gt;) <span class="punctuation">-&gt;</span> Span &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">headers</span> = request.<span class="title function_ invoke__">headers</span>();</span><br><span class="line">    info_span!(<span class="string">&quot;incoming request&quot;</span>, ?headers, trace_id = field::Empty)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Finally we have to make sure that log events are written including the stack of spans within which they occurred. Actually that is already the default for the JSON formatter layer we are using; this behavior could be changed via <code>fmt::layer().json().with_span_list(...)</code>.</p>
+<p>As a result of all this, log events are written like this:</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;timestamp&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2023-09-30T06:47:03.072244Z&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;level&quot;</span><span class="punctuation">:</span> <span class="string">&quot;DEBUG&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;fields&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;message&quot;</span><span class="punctuation">:</span> <span class="string">&quot;received response from rpc Hello&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;msg&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Hello, I&#x27;m built with Rust, Axum and tonic!&quot;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;endpoint&quot;</span><span class="punctuation">:</span> <span class="string">&quot;http://localhost:8090&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;target&quot;</span><span class="punctuation">:</span> <span class="string">&quot;hello_tracing_gateway::backend&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;span&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;hello-backend-client&quot;</span></span><br><span class="line">  <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;spans&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;headers&quot;</span><span class="punctuation">:</span> <span class="string">&quot;&#123;\&quot;host\&quot;: \&quot;localhost:8080\&quot;, \&quot;accept-encoding\&quot;: \&quot;gzip, deflate\&quot;, \&quot;accept\&quot;: \&quot;*/*\&quot;, \&quot;connection\&quot;: \&quot;keep-alive\&quot;, \&quot;user-agent\&quot;: \&quot;HTTPie/3.2.2\&quot;&#125;&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;trace_id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;a13cc1052ac7f4c3e07a4ef6022c27b1&quot;</span><span class="punctuation">,</span></span><br><span class="line">      <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;incoming request&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;hello-handler&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="punctuation">&#123;</span></span><br><span class="line">      <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;hello-backend-client&quot;</span></span><br><span class="line">    <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+
+<p>Notice the <code>trace_id</code> field on the topmost span. This is already very helpful in “manually” correlating log events across the call stack and across different services. But, depending on the capabilities of the telemetry backend of choice, there should be a deep integration between logs and traces such that we can navigate from one to another.</p>
+<p>Grafana Cloud – using Loki for logs and Tempo for traces – can do this out of the box without any further processing of the log or trace events:</p>
+<p><img src="/img/hello-tracing-rs.png"></p>
+<p>This picture – the same like in the first episode – shows a structured log event on the left and an associated trace on the right. Notice the blue button at the bottom of the left half, right of the trace ID, which is a link pointing to the traces. Similar links taking us to the corresponding logs exist for the visualization of traces if we drill down into a particular span to show its details.</p>
+<p>We finally have arrived at the end of this series. Thank you for staying around until here. Let me know if you have any questions. And of course the example code can be found at <a target="_blank" rel="noopener" href="https://github.com/hseeberger/hello-tracing-rs/">hello-tracing-rs on GitHub</a>.</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2023-09-30-dist-tracing-4/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&text=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&is_video=false&description=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Distributed Tracing in Rust, Episode 4: correlating logs and traces&body=Check out this article: https://hseeberger.github.io/2023-09-30-dist-tracing-4/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&title=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&name=Distributed Tracing in Rust, Episode 4: correlating logs and traces&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2023-09-30-dist-tracing-4/&t=Distributed Tracing in Rust, Episode 4: correlating logs and traces"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2023
+    Heiko Seeberger
+  </div>
+  <div><a rel="me noopener" target="_blank" href="https://hachyderm.io/@hseeberger"></a></div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
