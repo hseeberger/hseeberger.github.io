@@ -54,7 +54,7 @@ tracing_subscriber::registry()
     .context("initialize tracing subscriber")
 ```
 
-`tracing-subsciber` implements a pretty sophisticated layer architecture, which we will use later in greater depth, but for now the above only applies a filter layer which is initialized from environment variables – `RUST_LOG` can be used to set per module/traget levels – as well a formatter layer that logs JSON formatted representations of tracing events.
+`tracing-subsciber` implements a pretty sophisticated layer architecture, which we will use later in greater depth, but for now the above only applies a filter layer which is initialized from environment variables – `RUST_LOG` can be used to set per module/target levels – as well a formatter layer that logs JSON formatted representations of tracing events.
 
 Here is an example of a log event created by the `tracing-subsciber` initialized like above, assuming `RUST_LOG` is either set globally to `debug` or at least for the given target `hello_tracing_gateway`:
 
