@@ -133,6 +133,12 @@ theme_config:
     apple:
       url: /img/favicon.ico
   rss:
+  utterances:
+    enabled: true
+    repo: hseeberger/comments
+    issue_term: pathname
+    label: utteranc
+    theme: github-dark
 
 plausible:
   enable: true
