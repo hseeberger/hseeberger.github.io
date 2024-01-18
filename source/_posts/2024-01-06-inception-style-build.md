@@ -97,7 +97,12 @@ Locally we can easily depend on libraries in private GitHub repositories using C
 foo = { git = "ssh://git@github.com/<<ORGANIZATION>>/foo" }
 ```
 
-For this to work, we just need to have our personal public SSH key registered at GitHub, what most every developer has.
+For this to work, we just need to have our personal public SSH key registered at GitHub, what most every developer has. We also have to tweak a specific Cargo setting via the `.cargo/config.toml` file:
+
+```toml
+[net]
+git-fetch-with-cli = true
+```
 
 If we want CI to be able to build and test applications with such ssh dependencies, we have to put in some more effort. First we need to create a pair of SSH keys. Then we add the public one as deploy key to the GitHub repository which hosts the library dependency. Next we add the private key as action secret to the GitHub repository of the application. And finally we add the fantastic public `webfactory/ssh-agent` GitHub Action to our build:
 
