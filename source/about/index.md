@@ -4,9 +4,7 @@ title: About
 
 ![Heiko](/img/heiko-640.jpeg)
 
-Heiko Seeberger loves rock climbing, is an internationally renown expert on Scala and Akka and for a couple of years has been spending his coding energy on caressing the Rust compiler. He has more than 20 years of experience in software engineering, consulting and training and is an active open source contributor.
-
-Heiko works as an independent contractor and regularly shares his knowledge at conferences and user group meetings.
+Heiko Seeberger loves rock climbing and being challenged by interesting software engineering problems. He has more than 25 years of experience in software engineering, consulting and training and is an active open source contributor, tech blogger and conference speaker. His current focus is on backend development with Rust.
 
 If you are looking for Rust expertise, don't hesitate to reach out to me at<br/>`mail (at) heikoseeberger (dot) de`.
 
