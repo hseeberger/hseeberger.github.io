@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="A lot has been written about concurrency and parallelism, so we only briefly define what is needed for this article: Concurrent programming allows us to run two or more computations in overlapping per">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Concurrent and parallel future execution in Rust">
+<meta property="og:url" content="https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/index.html">
+<meta property="og:site_name" content="Heiko&#39;s Blog">
+<meta property="og:description" content="A lot has been written about concurrency and parallelism, so we only briefly define what is needed for this article: Concurrent programming allows us to run two or more computations in overlapping per">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-01-15T00:00:00.000Z">
+<meta property="article:modified_time" content="2025-01-15T08:54:35.442Z">
+<meta property="article:author" content="Heiko Seeberger">
+<meta property="article:tag" content="rust">
+<meta property="article:tag" content="tokio">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/img/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/img/favicon.ico" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/img/favicon.ico">
+        
+      
+    
+    <!-- title -->
+    <title>Concurrent and parallel future execution in Rust</title>
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<!-- hexo injector head_end start --><script async defer data-domain="heikoseeberger.de" src="https://plausible.io/js/plausible.js" ></script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 6.3.0"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2024-01-06-inception-style-build/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&text=Concurrent and parallel future execution in Rust"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&is_video=false&description=Concurrent and parallel future execution in Rust"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Concurrent and parallel future execution in Rust&body=Check out this article: https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&name=Concurrent and parallel future execution in Rust&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&t=Concurrent and parallel future execution in Rust"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index py4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Concurrent and parallel future execution in Rust
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">Heiko Seeberger</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2025-01-15T00:00:00.000Z" itemprop="datePublished">2025-01-15</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link-link" href="/tags/rust/" rel="tag">rust</a>, <a class="tag-link-link" href="/tags/tokio/" rel="tag">tokio</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>A lot has been written about concurrency and parallelism, so we only briefly define what is needed for this article: <strong>Concurrent programming</strong> allows us to run two or more computations in overlapping periods of time and <strong>parallel execution</strong> means that two or more computations are actually executed at the same instant. So a concurrent program could be executed in parallel, but it need not be.</p>
+<p>Tokio, Rust’s prevalent async runtime, provides <strong>task</strong>s as the main vehicle for concurrent programming. When using the multi-thread scheduler, tasks are executed on a thread pool. As most modern processors offer several CPU cores, a number of tasks – up to the number of CPU cores – can be executed in parallel. So parallel execution is a property of the hardware.</p>
+<p>In Tokio, <strong>Future</strong>s – Rust’s abstraction for asynchronous computations – are executed within the context of a task which drives them to completion. It is possible to await two or more futures concurrently, but if they are driven by the same task, they are not executed in parallel.</p>
+<p>Assuming we want our programs to be as performat as possible, should we then always spawn a task when awaiting concurrent futures? Not necessarily, because that depends on how much work these futures contain that can be parallized.</p>
+<p>I&#x2F;O heavy futures mostly await low-level asyncronous and non-blocking operating system calls to get back, so a single task can easily drive a lot of these futures, i.e. these futures are executed “effectively in parallel”.</p>
+<p>Yet when it comes to CPU heavy asynchronous computations, a single future effectively blocks its driving task and prevents other futures from making progress. Then is makes sense to spawn a task for each such future.</p>
+<p>Let’s look at an example, extremely simplified, but with a realistic real-world background: a streaming pipeline, continuously fetching data from some remote endpoint, which is I&#x2F;O heavy, then transforming the retrieved data, which is CPU heavy. To keep things simple, we provide two dummy functions for these stages:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/// A future that awaits some asyncronous and non-blocking, e.g. I/O related, work.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">fetch</span>() &#123;</span><br><span class="line">    <span class="comment">// No work is performed while awaiting.</span></span><br><span class="line">    <span class="title function_ invoke__">sleep</span>(ONE_SECOND).<span class="keyword">await</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/// A future that is keeping the CPU busy.</span></span><br><span class="line"><span class="keyword">pub</span> <span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">transform</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">end</span> = OffsetDateTime::<span class="title function_ invoke__">now_utc</span>() + ONE_SECOND;</span><br><span class="line">    <span class="comment">// As Tokio tasks are scheduled cooperatively, this busy spin runs uninterrupted to the end.</span></span><br><span class="line">    <span class="keyword">while</span> OffsetDateTime::<span class="title function_ invoke__">now_utc</span>() &lt;= end &#123;&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The basic streaming pipeline looks like this:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">pipeline</span> = stream::<span class="title function_ invoke__">repeat_with</span>(OffsetDateTime::now_utc)</span><br><span class="line">    .<span class="title function_ invoke__">then</span>(|_| <span class="title function_ invoke__">fetch</span>())</span><br><span class="line">    .<span class="title function_ invoke__">then</span>(|_| <span class="title function_ invoke__">transform</span>());</span><br></pre></td></tr></table></figure>
+
+<p>Notice, that <code>then</code> – a stream combinator from <code>futures::StreamExt</code> – is sort of an asynchronous version of <code>map</code>, i.e. transforms the stream’s items by awaiting the given future.</p>
+<p>In order to measure the performance – the time the pipeline needs to process four items – we use the following program:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#[tokio::main]</span></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">fn</span> <span class="title function_">main</span>() &#123;</span><br><span class="line">    <span class="keyword">let</span> <span class="variable">start</span> = OffsetDateTime::<span class="title function_ invoke__">now_utc</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">pipeline</span> = ...</span><br><span class="line"></span><br><span class="line">    pipeline.<span class="title function_ invoke__">take</span>(<span class="number">4</span>).<span class="title function_ invoke__">count</span>().<span class="keyword">await</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">let</span> <span class="variable">duration</span> = OffsetDateTime::<span class="title function_ invoke__">now_utc</span>() - start;</span><br><span class="line">    <span class="built_in">println!</span>(<span class="string">&quot;Duration: &#123;duration&#125;&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Running this with the above pipeline will take eight seconds, because so far there are no concurrent stages and therefore items flow through the pipeline one by one, each taking one second for <code>fetch</code> and <code>transform</code>.</p>
+<p>Concurrency can be introduced with the <code>buffered</code> combinator which expects the stream items to be futures. It awaits up to the given number of futures concurrently and emits their output into the stream in the original order.</p>
+<p>Assuming <code>NUM_CPUS</code> is set to the actual number of available CPU cores, which could be determined using the <a target="_blank" rel="noopener" href="https://crates.io/crates/num_cpus">num_cpus crate</a>, and also assuming that <code>NUM_CPUS</code> is larger or equal four (the number of items we take from the stream in the above program) the pipeline now looks like this:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">pipeline</span> = stream::<span class="title function_ invoke__">repeat_with</span>(OffsetDateTime::now_utc)</span><br><span class="line">    .<span class="title function_ invoke__">map</span>(|_| <span class="title function_ invoke__">fetch</span>())</span><br><span class="line">    .<span class="title function_ invoke__">buffered</span>(NUM_CPUS)</span><br><span class="line">    .<span class="title function_ invoke__">map</span>(|_| <span class="title function_ invoke__">transform</span>())</span><br><span class="line">    .<span class="title function_ invoke__">buffered</span>(NUM_CPUS);</span><br></pre></td></tr></table></figure>
+
+<p>Notice that replace <code>then</code> with <code>map</code>, because we no longer want to await the <code>fetch</code> and <code>transform</code> futures, but we want to feed them into <code>buffered</code> which awaits them concurrently.</p>
+<p>Now guess how long the above program takes. Still eight seconds? Or only two? Or maybe … five? It’s the latter. As explained above, <code>fetch</code> is executed “effectively in parallel”, so it only takes one second for all four items to pass that stage. Yet <code>transform</code> keeps the single executing task busy for one second for each item, hence it takes four seconds for that stage.</p>
+<p>Therefore we need to spawn a task for each stream item to execute <code>transform</code>:</p>
+<figure class="highlight rust"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">let</span> <span class="variable">pipeline</span> = stream::<span class="title function_ invoke__">repeat_with</span>(OffsetDateTime::now_utc)</span><br><span class="line">    .<span class="title function_ invoke__">map</span>(|_| <span class="title function_ invoke__">fetch</span>())</span><br><span class="line">    .<span class="title function_ invoke__">buffered</span>(NUM_CPUS)</span><br><span class="line">    .<span class="title function_ invoke__">map</span>(|_| task::<span class="title function_ invoke__">spawn</span>(<span class="title function_ invoke__">transform</span>()))</span><br><span class="line">    .<span class="title function_ invoke__">buffered</span>(NUM_CPUS);</span><br></pre></td></tr></table></figure>
+
+<p>Now we got the time to run the program down to only two seconds. And this is the optimum we can get. In particular it would not help to increase the argument for the second <code>buffered</code> call to some value larger than the number of CPU cores, because that hardware property limits the amount of parallelism we can get. Yet increasing the argument for the first <code>buffered</code> call might make sense, because prefetching some more items via I&#x2F;O could possibly pay off in cases of occasional I&#x2F;O bottlenecks.</p>
+<p>If you want to check this out yourself, you can find the code at <a target="_blank" rel="noopener" href="https://github.com/hseeberger/demo-concurrent-parallel-futures">demo-concurrent-parallel-futures on GitHub</a>.</p>
+
+  </div>
+</article>
+
+
+    <div class="blog-post-comments">
+        <div id="utterances_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Writing</a></li>
+         
+          <li><a href="/about/">About</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&text=Concurrent and parallel future execution in Rust"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&is_video=false&description=Concurrent and parallel future execution in Rust"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Concurrent and parallel future execution in Rust&body=Check out this article: https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&title=Concurrent and parallel future execution in Rust"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&name=Concurrent and parallel future execution in Rust&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://hseeberger.github.io/2025-01-15-concurrent-parallel-futures/&t=Concurrent and parallel future execution in Rust"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2025
+    Heiko Seeberger
+  </div>
+  <div><a rel="me noopener" target="_blank" href="https://hachyderm.io/@hseeberger"></a></div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a href="/about/">About</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+ 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script> 
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script> 
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="far fa-clone"></i>';
+    btn += '</span>'; 
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Umami Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+    <script type="text/javascript">
+      var utterances_repo = 'hseeberger/comments';
+      var utterances_issue_term = 'pathname';
+      var utterances_label = 'utteranc';
+      var utterances_theme = 'github-dark';
+
+      (function(){
+          var script = document.createElement('script');
+
+          script.src = 'https://utteranc.es/client.js';
+          script.setAttribute('repo', utterances_repo);
+          script.setAttribute('issue-term', 'pathname');
+          script.setAttribute('label', utterances_label);
+          script.setAttribute('theme', utterances_theme);
+          script.setAttribute('crossorigin', 'anonymous');
+          script.async = true;
+          (document.getElementById('utterances_thread')).appendChild(script);
+      }());
+  </script>
+
+</body>
+</html>
