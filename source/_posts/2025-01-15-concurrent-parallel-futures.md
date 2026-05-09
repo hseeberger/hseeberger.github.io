@@ -13,7 +13,7 @@ Tokio, Rust's prevalent async runtime, provides **task**s as the main vehicle fo
 
 In Tokio, **Future**s – Rust's abstraction for asynchronous computations – are executed within the context of a task which drives them to completion. It is possible to await two or more futures concurrently, but if they are driven by the same task, they are not executed in parallel.
 
-Assuming we want our programs to be as performat as possible, should we then always spawn a task when awaiting concurrent futures? Not necessarily, because that depends on how much work these futures contain that can be parallized.
+Assuming we want our programs to be as performant as possible, should we then always spawn a task when awaiting concurrent futures? Not necessarily, because that depends on how much work these futures contain that can be parallized.
 
 I/O heavy futures mostly await low-level asyncronous and non-blocking operating system calls to get back, so a single task can easily drive a lot of these futures, i.e. these futures are executed "effectively in parallel".
 
